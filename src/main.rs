@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate rocket;
 
-mod content;
+mod parse;
 mod posts;
 
 use posts::page;
