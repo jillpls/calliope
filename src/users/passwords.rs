@@ -4,6 +4,10 @@ extern crate rand;
 use argon2 as a2;
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 
+pub fn verify_password(password: &[u8], hash: &str) -> bool {
+    a2::verify_encoded(hash, password).unwrap_or(false)
+}
+
 pub fn hash_password(
     password: &[u8],
     salt: Option<&[u8]>,
@@ -38,12 +42,11 @@ fn generate_salt(salt: Option<&[u8]>, salt_length: Option<usize>) -> Vec<u8> {
 
 #[cfg(test)]
 mod tests {
-    use super::hash_password;
+    use super::{hash_password, verify_password};
 
     #[test]
     fn hash() {
-        let hashed_password = hash_password(b"password", Some(b"saltx"), None).unwrap();
-        let hashed_password2 = hash_password(b"aaapassword", Some(b"saltx"), None).unwrap();
-        assert_eq!(hashed_password, hashed_password2);
+        let hashed_password = hash_password(b"password", None, None).unwrap();
+        assert!(verify_password(b"password", &hashed_password));
     }
 }
