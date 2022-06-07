@@ -1,7 +1,9 @@
 #[macro_use]
 extern crate rocket;
 
+mod content;
 mod posts;
+
 use posts::page;
 use rocket::fs::{relative, FileServer};
 
