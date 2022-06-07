@@ -1,10 +1,10 @@
 extern crate tera;
 
+use crate::parse;
 use rocket::response::content;
 use std::fs::read_to_string;
 use std::path::Path;
 use tera::{Context, Tera};
-use crate::parse;
 
 #[get("/<title>")]
 pub fn page(title: &str) -> content::RawHtml<String> {
