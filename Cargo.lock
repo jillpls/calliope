@@ -255,6 +255,7 @@ name = "calliope"
 version = "0.1.0"
 dependencies = [
  "ammonia",
+ "log",
  "pulldown-cmark",
  "rand",
  "rocket",
