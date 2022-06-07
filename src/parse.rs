@@ -1,3 +1,4 @@
+use ammonia;
 use pulldown_cmark as md;
 
 type ParseFunction = dyn Fn(&str, ParseOptions) -> String;
@@ -6,8 +7,13 @@ pub fn parse_content(
     content: &str,
     options: ParseOptions,
     parse_function: Box<ParseFunction>,
+    escape_html: bool,
 ) -> String {
-    parse_function(content, options)
+    if escape_html {
+        unimplemented!();
+    }
+    let parsed = parse_function(content, options);
+    ammonia::clean(&parsed)
 }
 
 pub fn parse_markdown(content: &str, parse_options: ParseOptions) -> String {
@@ -15,7 +21,7 @@ pub fn parse_markdown(content: &str, parse_options: ParseOptions) -> String {
     match parse_options {
         ParseOptions::All => {
             options = md::Options::all();
-        },
+        }
         _ => {}
     }
     let parser = md::Parser::new_ext(content, options);

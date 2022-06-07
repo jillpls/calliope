@@ -17,7 +17,12 @@ pub fn page(title: &str) -> content::RawHtml<String> {
         content::RawHtml(tera.render("page_not_found.html", &context).unwrap())
     } else {
         let content = read_to_string(content_path).unwrap();
-        let content = parse::parse_content(&content, parse::ParseOptions::None, Box::from(parse::parse_markdown));
+        let content = parse::parse_content(
+            &content,
+            parse::ParseOptions::None,
+            Box::from(parse::parse_markdown),
+            false,
+        );
         context.insert("content", &content);
         content::RawHtml(tera.render("post.html", &context).unwrap())
     }
