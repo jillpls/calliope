@@ -13,38 +13,55 @@ mod users;
 use data::database::connect;
 use posts::page;
 use rocket::fs::{relative, FileServer};
+use sqlx;
 
 const INSTALLED_VERSION_FILE: &str = "versions";
 
 #[launch]
 async fn rocket() -> _ {
-    let conn = connect(Some("sqlite.db")).await.unwrap();
-
-    init();
+    init().await;
 
     rocket::build()
         .mount("/", FileServer::from(relative!("static")))
         .mount("/wiki", routes![page])
 }
 
-fn init() -> bool {
+async fn init() -> bool {
     let installed_versions = std::fs::read_to_string(INSTALLED_VERSION_FILE);
 
     if let Ok(v) = installed_versions {
         if v != env!("CARGO_PKG_VERSION") {
             trace!("Version mismatch, starting setup ...");
             println!("Version mismatch, starting setup ...");
-            setup();
+            setup().await;
         }
     } else {
         trace!("No version file found, starting setup ...");
         println!("No version file found, starting setup ...");
-        setup();
+        setup().await;
     }
 
     return true;
 }
 
-fn setup() {
+async fn setup() {
+    let mut conn = connect(Some("sqlite.db")).await.unwrap();
+    println!("Established connection");
+    sqlx::query(
+        "
+create table users(
+    id int auto_increment primary key,
+    login varchar(30) not null unique,
+    hash varchar(255) not null,
+    activated int not null,
+    session char(20),
+    email varchar(30)
+)
+",
+    )
+    .execute(&mut conn)
+    .await
+    .expect("Failed creating table");
+
     std::fs::write(INSTALLED_VERSION_FILE, env!("CARGO_PKG_VERSION")).unwrap();
 }
