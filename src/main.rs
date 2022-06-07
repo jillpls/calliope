@@ -3,6 +3,7 @@ extern crate rocket;
 
 mod parse;
 mod posts;
+mod users;
 
 use posts::page;
 use rocket::fs::{relative, FileServer};
