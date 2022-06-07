@@ -11,3 +11,5 @@ tera = "1.15.0"
 sqlx = { version = "0.5.13", features = [ "runtime-tokio-rustls"] }
 pulldown-cmark = "0.9.1"
 ammonia = "3"
+rust-crypto = "0.2"
+rand = { version = "0.8", features = [ "std_rng" ] }
