@@ -1,0 +1,21 @@
+<html>
+<head>
+
+</head>
+<body>
+    {% if success %}
+    <h1>Login erfolgreich</h1>
+    <p>yay</p>
+    {% else %}
+        <h1>Einloggen</h1>
+        <form action method="post">
+            {% if errors is defined %}
+            <div class="form-errors">{{ errors }}</div>
+            {% endif %}
+            <label>Loginname: <input name="login" type="text"></label>
+            <label>Passwort: <input name="password" type="password"></label>
+            <input type="submit" value="Abschicken">
+        </form>
+    {% endif %}
+</body>
+</html>

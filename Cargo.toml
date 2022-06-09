@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rocket = "0.5.0-rc.2"
+rocket = { version = "0.5.0-rc.2", features=["secrets"] }
 tera = "1"
 sqlx = { version = "0.5", features = [ "runtime-tokio-rustls", "sqlite" ] }
 tokio = { version = "1", features = ["full"] }
@@ -15,3 +15,4 @@ ammonia = "3"
 rust-argon2 = "1.0.0"
 rand = { version = "0.8", features = [ "std_rng" ] }
 log = "0.4"
+uuid = { version = "1.1.1", features = ["v4", "fast-rng", "macro-diagnostics"]}
