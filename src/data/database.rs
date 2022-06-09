@@ -36,7 +36,10 @@ values
 
 #[derive(sqlx::FromRow)]
 pub struct LoginInfo {
-    pub(crate) id: i32, pub(crate) hash: String, pub(crate) activated: bool}
+    pub(crate) id: i32,
+    pub(crate) hash: String,
+    pub(crate) activated: bool,
+}
 
 pub async fn get_login_info(
     login: &String,
