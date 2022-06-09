@@ -14,7 +14,6 @@ use data::database::connect;
 use posts::page;
 use rocket::fs::{relative, FileServer};
 use sqlx;
-use users::users::{login_user, login_user_get, register_user, register_user_get};
 
 const INSTALLED_VERSION_FILE: &str = "versions";
 
@@ -26,10 +25,10 @@ async fn rocket() -> _ {
         .mount(
             "/users",
             routes![
-                users::users::register_user,
-                users::users::register_user_get,
-                users::users::login_user_get,
-                users::users::login_user
+                users::register_user,
+                users::register_user_get,
+                users::login_user_get,
+                users::login_user
             ],
         )
         .mount("/static", FileServer::from(relative!("static")))
