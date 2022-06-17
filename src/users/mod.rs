@@ -3,13 +3,14 @@ pub mod passwords;
 extern crate tera;
 extern crate uuid;
 
-use crate::data::database::{get_login_info, insert_user, update_user_session};
+use crate::data::database::{get_login_info, insert_user, update_user_session, UserData};
 use crate::users::passwords::{hash_password, verify_password};
 use rocket::form::Form;
 use rocket::http::{Cookie, CookieJar};
 use rocket::response::content;
+use rocket_db_pools as rdp;
 use tera::{Context, Tera};
-use uuid::{uuid, Uuid};
+use uuid::Uuid;
 
 #[derive(FromForm)]
 pub struct NewUser {
@@ -31,14 +32,17 @@ pub async fn register_user_get() -> content::RawHtml<String> {
 }
 
 #[post("/register", data = "<user>")]
-pub async fn register_user(user: Form<NewUser>) -> content::RawHtml<String> {
+pub async fn register_user(
+    mut conn: rdp::Connection<UserData>,
+    user: Form<NewUser>,
+) -> content::RawHtml<String> {
     let tera = Tera::new("templates/**/*.html").unwrap();
     let mut context = Context::new();
     if user.password == user.repeat {
         let hash = hash_password(user.password.as_bytes(), None, None)
             .unwrap()
             .to_string();
-        match insert_user(&user.login, &hash, None).await {
+        match insert_user(&user.login, &hash, &mut conn).await {
             Ok(_) => {
                 context.insert("success", &true);
             }
@@ -62,12 +66,13 @@ pub async fn login_user_get() -> content::RawHtml<String> {
 
 #[post("/login", data = "<user>")]
 pub async fn login_user(
+    mut conn: rdp::Connection<UserData>,
     user: Form<LoginUser>,
     cookies: &CookieJar<'_>,
 ) -> content::RawHtml<String> {
     let tera = Tera::new("templates/**/*.html").unwrap();
     let mut context = Context::new();
-    let login_info = get_login_info(&user.login, None).await;
+    let login_info = get_login_info(&user.login, &mut conn).await;
     match login_info {
         Err(_) => {
             let errors: String = "Benutzername oder Passwort falsch".to_string();
@@ -80,7 +85,8 @@ pub async fn login_user(
             } else {
                 if verify_password(user.password.as_bytes(), &result.hash) {
                     let session_id = Uuid::new_v4();
-                    match update_user_session(&result.id, &session_id.to_string(), None).await {
+                    match update_user_session(&result.id, &session_id.to_string(), &mut conn).await
+                    {
                         Ok(_) => {
                             cookies.add_private(Cookie::new("user_id", result.id.to_string()));
                             cookies.add_private(Cookie::new("session", session_id.to_string()));

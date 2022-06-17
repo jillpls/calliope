@@ -1,8 +1,15 @@
 extern crate sqlx;
 extern crate tokio;
 
+use rocket_db_pools as rdp;
+use rocket_db_pools::Database;
+
 use sqlx::sqlite::{SqliteQueryResult, SqliteRow};
 use sqlx::{migrate::MigrateDatabase, Connection, Error, Sqlite, SqliteConnection};
+
+#[derive(Database)]
+#[database("userdata")]
+pub struct UserData(sqlx::SqlitePool);
 
 pub async fn connect(path: Option<&str>) -> Box<Result<SqliteConnection, sqlx::Error>> {
     let url = if let Some(p) = path {
@@ -19,7 +26,7 @@ pub async fn connect(path: Option<&str>) -> Box<Result<SqliteConnection, sqlx::E
 pub async fn insert_user(
     login: &String,
     hash: &String,
-    conn: Option<SqliteConnection>,
+    conn: &mut rdp::Connection<UserData>,
 ) -> Result<SqliteQueryResult, sqlx::Error> {
     let query = "
 insert into users
@@ -30,7 +37,7 @@ values
     sqlx::query(&*query)
         .bind(login)
         .bind(hash)
-        .execute(&mut conn.unwrap_or(connect(Some("sqlite.db")).await.unwrap()))
+        .execute(&mut **conn)
         .await
 }
 
@@ -43,7 +50,7 @@ pub struct LoginInfo {
 
 pub async fn get_login_info(
     login: &String,
-    conn: Option<SqliteConnection>,
+    conn: &mut rdp::Connection<UserData>,
 ) -> Result<LoginInfo, Error> {
     let query = "
     select id, hash, activated
@@ -52,14 +59,14 @@ pub async fn get_login_info(
     ";
     sqlx::query_as::<_, LoginInfo>(&*query)
         .bind(login)
-        .fetch_one(&mut conn.unwrap_or(connect(Some("sqlite.db")).await.unwrap()))
+        .fetch_one(&mut **conn)
         .await
 }
 
 pub async fn update_user_session(
     id: &i32,
     session_id: &String,
-    conn: Option<SqliteConnection>,
+    conn: &mut rdp::Connection<UserData>,
 ) -> Result<SqliteQueryResult, sqlx::Error> {
     let query = "
     update users
@@ -69,7 +76,7 @@ pub async fn update_user_session(
     sqlx::query(&*query)
         .bind(session_id)
         .bind(id)
-        .execute(&mut conn.unwrap_or(connect(Some("sqlite.db")).await.unwrap()))
+        .execute(&mut **conn)
         .await
 }
 #[cfg(test)]
