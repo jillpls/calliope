@@ -2,8 +2,8 @@
 [default]
 limits = { form = "64 kB", json = "1 MiB" }
 
-[default.databases.sqlite_userdata]
-url = "userdata.sqlite"
+[default.databases.userdata]
+url = "userdata.db"
 
 ## set only when compiled in debug mode, i.e, `cargo build`
 [debug]

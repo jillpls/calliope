@@ -10,7 +10,8 @@ mod parse;
 mod posts;
 mod users;
 
-use data::database::connect;
+use data::database::{connect, UserData};
+use rocket_db_pools::Database;
 use posts::page;
 use rocket::fs::{relative, FileServer};
 use sqlx;
@@ -22,6 +23,7 @@ async fn rocket() -> _ {
     init().await;
 
     rocket::build()
+    .attach(UserData::init())
         .mount(
             "/users",
             routes![
